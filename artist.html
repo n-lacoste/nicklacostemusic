@@ -19,20 +19,24 @@
   </main>
 
   <script>
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQP5695vxUXemrM0SOvRtF8JZswoxLVrxeNnES8-ZP-3xXYcmtLsZ-pkWXd-Qk9e3SJRK59KkciEV53/pub?gid=1698575853&single=true&output=csv';
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQP5695vxUXemrM0SOvRtF8JZswoxLVrxeNnES8-ZP-3xXYcmtLsZ-pkWXd-Qk9e3SJRK59KkciEV53/pub?gid=600248113&single=true&output=csv';
 
     let cache = null;
 
     async function loadData() {
-      const res = await fetch(csvUrl);
-      const text = await res.text();
-      cache = text.trim().split('\n').map(r => r.split(','));
+      try {
+        const res = await fetch(csvUrl);
+        const text = await res.text();
+        cache = text.trim().split('\n').map(r => r.split(','));
+      } catch (err) {
+        document.getElementById('table-container').innerText = 'Failed to load data.';
+      }
     }
 
     function filterArtist(name) {
       if (!cache) return;
       const header = cache[0];
-      const rows = cache.slice(1).filter(r => r[0].toLowerCase().includes(name.toLowerCase()));
+      const rows = cache.slice(1).filter(r => r[0].toLowerCase().includes(name.toLowerCase())); // assumes Artist is in first column
       renderTable([header, ...rows]);
     }
 
@@ -52,7 +56,9 @@
       container.appendChild(table);
     }
 
-    document.getElementById('artist-input').addEventListener('input', e => filterArtist(e.target.value));
+    document.getElementById('artist-input').addEventListener('input', e => {
+      filterArtist(e.target.value);
+    });
 
     loadData();
   </script>
