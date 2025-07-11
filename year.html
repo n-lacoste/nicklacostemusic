@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Albums by Year Range</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>📅 Albums by Year Range</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="artist.html">By Artist</a>
+    </nav>
+  </header>
+  <main>
+    <label>From <input type="number" id="start-year" value="2000" /></label>
+    <label>To <input type="number" id="end-year" value="2025" /></label>
+    <button id="filter">Filter</button>
+    <div id="table-container">Select a range and click Filter.</div>
+  </main>
+
+  <script>
+    const yearCsv = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQP5695vxUXemrM0SOvRtF8JZswoxLVrxeNnES8-ZP-3xXYcmtLsZ-pkWXd-Qk9e3SJRK59KkciEV53/pub?gid=1660198828&single=true&output=csv';
+
+    let cache = null;
+
+    async function loadData() {
+      const res = await fetch(yearCsv);
+      const text = await res.text();
+      cache = text.trim().split('\n').map(r => r.split(','));
+    }
+
+    function filterRange() {
+      if (!cache) return;
+      const start = parseInt(document.getElementById('start-year').value);
+      const end = parseInt(document.getElementById('end-year').value);
+      const header = cache[0];
+      const rows = cache.slice(1).filter(r => {
+        const year = parseInt(r[1]); // assumes year is in column 2 (index 1)
+        return year >= start && year <= end;
+      });
+      renderTable([header, ...rows]);
+    }
+
+    function renderTable(rows) {
+      const table = document.createElement('table');
+      rows.forEach((row, i) => {
+        const tr = document.createElement('tr');
+        row.forEach(cell => {
+          const el = document.createElement(i === 0 ? 'th' : 'td');
+          el.textContent = cell;
+          tr.appendChild(el);
+        });
+        table.appendChild(tr);
+      });
+      const container = document.getElementById('table-container');
+      container.innerHTML = '';
+      container.appendChild(table);
+    }
+
+    document.getElementById('filter').addEventListener('click', filterRange);
+
+    loadData();
+  </script>
+</body>
+</html>
