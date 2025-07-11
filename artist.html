@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Albums by Artist</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🎤 Albums by Artist</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="year.html">By Year Range</a>
+    </nav>
+  </header>
+  <main>
+    <input type="text" id="artist-input" placeholder="Type artist name…" />
+    <div id="table-container">Type an artist to see results…</div>
+  </main>
+
+  <script>
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQP5695vxUXemrM0SOvRtF8JZswoxLVrxeNnES8-ZP-3xXYcmtLsZ-pkWXd-Qk9e3SJRK59KkciEV53/pub?gid=1698575853&single=true&output=csv';
+
+    let cache = null;
+
+    async function loadData() {
+      const res = await fetch(csvUrl);
+      const text = await res.text();
+      cache = text.trim().split('\n').map(r => r.split(','));
+    }
+
+    function filterArtist(name) {
+      if (!cache) return;
+      const header = cache[0];
+      const rows = cache.slice(1).filter(r => r[0].toLowerCase().includes(name.toLowerCase()));
+      renderTable([header, ...rows]);
+    }
+
+    function renderTable(rows) {
+      const table = document.createElement('table');
+      rows.forEach((row, i) => {
+        const tr = document.createElement('tr');
+        row.forEach(cell => {
+          const el = document.createElement(i === 0 ? 'th' : 'td');
+          el.textContent = cell;
+          tr.appendChild(el);
+        });
+        table.appendChild(tr);
+      });
+      const container = document.getElementById('table-container');
+      container.innerHTML = '';
+      container.appendChild(table);
+    }
+
+    document.getElementById('artist-input').addEventListener('input', e => filterArtist(e.target.value));
+
+    loadData();
+  </script>
+</body>
+</html>
